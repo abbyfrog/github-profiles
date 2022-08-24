@@ -22,7 +22,7 @@ export const ProfileSearchView: React.FC = () => {
       setErrorFetching(false);
 
       fetch(`https://api.github.com/users/${username}`)
-        .then(async (response) => {
+        .then(async (response: Response) => {
           if (response.status === 200) {
             const user = (await response.json()) as UserDTO;
             setProfile({
@@ -61,7 +61,7 @@ export const ProfileSearchView: React.FC = () => {
         InputProps={{
           endAdornment: (
             <InputAdornment position="end">
-              <IconButton type="submit" onClick={() => searchProfiles(searchValue)}>
+              <IconButton aria-label="Search profiles" type="submit" onClick={() => searchProfiles(searchValue)}>
                 <Search />
               </IconButton>
             </InputAdornment>
