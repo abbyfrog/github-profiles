@@ -7,6 +7,22 @@ import { RepositoryDTO, UserDTO } from '../../types/dtos';
 
 const GITHUB_API_URL = 'https://api.github.com';
 
+const constructProfile = (dtos: { userDTO: UserDTO; repoDTOs: RepositoryDTO[] }) => {
+  const { userDTO, repoDTOs } = dtos;
+  return {
+    username: userDTO.login,
+    avatarUrl: userDTO.avatar_url,
+    repositories: repoDTOs.map(({ name, html_url, forks_count, stargazers_count }) => ({
+      name,
+      url: html_url,
+      forkCount: forks_count,
+      starCount: stargazers_count,
+    })),
+    repositoryCount: userDTO.public_repos,
+    followerCount: userDTO.followers,
+  };
+};
+
 export const ProfileSearchView: React.FC = () => {
   const [searchValue, setSearchValue] = React.useState<string>('');
   const [loading, setLoading] = React.useState<boolean>(false);
@@ -31,20 +47,12 @@ export const ProfileSearchView: React.FC = () => {
             handleFetchError(response);
             return;
           }
-          const user = (await response.json()) as UserDTO;
-          const repositories = (await repositoriesResponse.json()) as RepositoryDTO[];
-          setProfile({
-            username: user.login,
-            avatarUrl: user.avatar_url,
-            repositories: repositories.map(({ name, html_url, forks_count, stargazers_count }) => ({
-              name,
-              url: html_url,
-              forkCount: forks_count,
-              starCount: stargazers_count,
-            })),
-            repositoryCount: user.public_repos,
-            followerCount: user.followers,
-          });
+          setProfile(
+            constructProfile({
+              userDTO: (await response.json()) as UserDTO,
+              repoDTOs: (await repositoriesResponse.json()) as RepositoryDTO[],
+            }),
+          );
         })
         .catch((err: unknown) => handleFetchError(err))
         .finally(() => setLoading(false));
