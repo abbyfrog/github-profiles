@@ -2,7 +2,10 @@ import React from 'react';
 import { Alert, Card, CardHeader, CircularProgress, IconButton, InputAdornment, TextField } from '@mui/material';
 import { Search } from '@mui/icons-material';
 import { ProfileView } from '../Profile/ProfileView';
-import { Profile, UserDTO } from '../../types/profile';
+import { Profile } from '../../types/profile';
+import { RepositoryDTO, UserDTO } from '../../types/dtos';
+
+const GITHUB_API_URL = 'https://api.github.com';
 
 export const ProfileSearchView: React.FC = () => {
   const [searchValue, setSearchValue] = React.useState<string>('');
@@ -21,19 +24,27 @@ export const ProfileSearchView: React.FC = () => {
       setLoading(true);
       setErrorFetching(false);
 
-      fetch(`https://api.github.com/users/${username}`)
+      fetch(`${GITHUB_API_URL}/users/${username}`)
         .then(async (response: Response) => {
-          if (response.status === 200) {
-            const user = (await response.json()) as UserDTO;
-            setProfile({
-              username: user.login,
-              avatarUrl: user.avatar_url,
-              repositoryCount: user.public_repos,
-              followerCount: user.followers,
-            });
-          } else {
+          const repositoriesResponse = await fetch(`${GITHUB_API_URL}/users/${username}/repos`);
+          if (response.status !== 200 || repositoriesResponse.status !== 200) {
             handleFetchError(response);
+            return;
           }
+          const user = (await response.json()) as UserDTO;
+          const repositories = (await repositoriesResponse.json()) as RepositoryDTO[];
+          setProfile({
+            username: user.login,
+            avatarUrl: user.avatar_url,
+            repositories: repositories.map(({ name, html_url, forks_count, stargazers_count }) => ({
+              name,
+              url: html_url,
+              forkCount: forks_count,
+              starCount: stargazers_count,
+            })),
+            repositoryCount: user.public_repos,
+            followerCount: user.followers,
+          });
         })
         .catch((err: unknown) => handleFetchError(err))
         .finally(() => setLoading(false));
@@ -74,6 +85,7 @@ export const ProfileSearchView: React.FC = () => {
         <ProfileView
           avatarUrl={profile.avatarUrl}
           followerCount={profile.followerCount}
+          repositories={profile.repositories}
           repositoryCount={profile.repositoryCount}
           username={profile.username}
         />

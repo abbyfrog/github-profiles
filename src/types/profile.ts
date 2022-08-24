@@ -1,41 +1,16 @@
-export type UserDTO = {
-  avatar_url: string;
-  bio: string;
-  blog: string;
-  company: string;
-  created_at: string;
-  email: string;
-  events_url: string;
-  followers: number;
-  followers_url: string;
-  following: number;
-  following_url: string;
-  gists_url: string;
-  gravatar_id: string;
-  hireable: boolean;
-  html_url: string;
-  id: number;
-  location: string;
-  login: string;
-  name: string | null;
-  node_id: string;
-  organizations_url: string;
-  public_gists: number;
-  public_repos: number;
-  received_events_url: string;
-  repos_url: string;
-  site_admin: boolean;
-  starred_url: string;
-  subscriptions_url: string;
-  twitter_username: string;
-  type: string;
-  updated_at: string;
-  url: string;
-};
+import { RepositoryDTO, UserDTO } from './dtos';
 
 export type Profile = {
   avatarUrl: UserDTO['avatar_url'];
   followerCount: UserDTO['followers'];
+  repositories: Repository[];
   repositoryCount: UserDTO['public_repos'];
   username: UserDTO['login'];
+};
+
+export type Repository = {
+  name: RepositoryDTO['name'];
+  forkCount: RepositoryDTO['forks_count'];
+  starCount: RepositoryDTO['stargazers_count'];
+  url: RepositoryDTO['html_url'];
 };
