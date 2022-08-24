@@ -10,23 +10,36 @@ import {
   TextField,
 } from '@mui/material';
 import { Search } from '@mui/icons-material';
-import { UserDTO } from '../../types/profile';
+import { ProfileView } from '../Profile/ProfileView';
+import { Profile, UserDTO } from '../../types/profile';
 
 export const ProfileSearchView: React.FC = () => {
   const [searchValue, setSearchValue] = React.useState<string>('');
   const [loading, setLoading] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string | undefined>(undefined);
+  const [profile, setProfile] = React.useState<Profile | undefined>(undefined);
 
   const searchProfiles = React.useCallback((username: string) => {
     setLoading(true);
     setError(undefined);
 
     fetch(`https://api.github.com/users/${username}`)
-      .then(async (data) => {
-        const user = (await data.json()) as UserDTO;
-        console.log('user: ', user);
+      .then(async (response) => {
+        if (response.status === 200) {
+          const user = (await response.json()) as UserDTO;
+          console.log('user: ', user);
+          setProfile({
+            username: user.login,
+            avatarUrl: user.avatar_url,
+            repositoryCount: user.public_repos,
+            followerCount: user.followers,
+          });
+        } else {
+          console.log('nope nope nope');
+        }
       })
       .catch((err: unknown) => {
+        setProfile(undefined);
         const errorMessage = `Error fetching user: ${JSON.stringify(err, null, 2)}`;
         console.error(errorMessage);
         setError(errorMessage);
@@ -65,6 +78,14 @@ export const ProfileSearchView: React.FC = () => {
           <AlertTitle>Error</AlertTitle>
           {error}
         </Alert>
+      )}
+      {profile && (
+        <ProfileView
+          avatarUrl={profile.avatarUrl}
+          followerCount={profile.followerCount}
+          repositoryCount={profile.repositoryCount}
+          username={profile.username}
+        />
       )}
     </Card>
   );

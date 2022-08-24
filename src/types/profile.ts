@@ -32,3 +32,10 @@ export type UserDTO = {
   updated_at: string;
   url: string;
 };
+
+export type Profile = {
+  avatarUrl: UserDTO['avatar_url'];
+  followerCount: UserDTO['followers'];
+  repositoryCount: UserDTO['public_repos'];
+  username: UserDTO['login'];
+};
