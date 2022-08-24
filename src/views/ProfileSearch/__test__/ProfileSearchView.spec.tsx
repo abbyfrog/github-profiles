@@ -1,10 +1,10 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
-import { ProfileSearch } from "../ProfileSearch";
+import { ProfileSearchView } from "../ProfileSearchView";
 
-describe("ProfileSearch", () => {
+describe("ProfileSearchView", () => {
   it("renders title", () => {
-    render(<ProfileSearch />);
+    render(<ProfileSearchView />);
 
     const linkElement = screen.getByText('GitHub profile finder');
 
