@@ -1,5 +1,5 @@
 import React from 'react';
-import { Avatar, Card, ListItemButton, ListItemText, Typography } from '@mui/material';
+import { Avatar, Card, Link, Typography } from '@mui/material';
 import { Profile } from '../../types/profile';
 import { styles } from './styles';
 import { getTopFourRepositories } from '../../utils/repository';
@@ -19,10 +19,13 @@ export const ProfileView: React.FC<Profile> = ({
       <Typography>Number of repositories: {repositoryCount}</Typography>
       <Typography>Number of followers: {followerCount}</Typography>
       <Typography>Top 4 repositories: </Typography>
-      {topRepositories.map((repo) => (
-        <ListItemButton component="a" href={repo.url} key={`${repo.name}-${repo.url}`}>
-          <ListItemText primary={repo.name} />
-        </ListItemButton>
+      {topRepositories.map((repo, index) => (
+        <Typography>
+          {index + 1}:{' '}
+          <Link href={repo.url} key={`${repo.name}-${repo.url}`}>
+            {repo.name}
+          </Link>
+        </Typography>
       ))}
     </Card>
   );
