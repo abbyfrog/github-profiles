@@ -4,6 +4,7 @@ import { Search } from '@mui/icons-material';
 import { ProfileView } from '../Profile/ProfileView';
 import { Profile } from '../../types/profile';
 import { RepositoryDTO, UserDTO } from '../../types/dtos';
+import { styles } from './styles';
 
 const GITHUB_API_URL = 'https://api.github.com';
 
@@ -63,30 +64,32 @@ export const ProfileSearchView: React.FC = () => {
   return (
     <Box>
       <Typography variant="h3">GitHub profile finder</Typography>
-      <TextField
-        label="Username"
-        value={searchValue}
-        onChange={(e) => {
-          setErrorFetching(false);
-          setLoading(false);
-          setSearchValue(e.target.value);
-        }}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') {
-            searchProfiles(searchValue);
-          }
-        }}
-        variant="outlined"
-        InputProps={{
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton aria-label="Search profiles" type="submit" onClick={() => searchProfiles(searchValue)}>
-                <Search />
-              </IconButton>
-            </InputAdornment>
-          ),
-        }}
-      />
+      <Box style={styles.formPadding}>
+        <TextField
+          label="Username"
+          value={searchValue}
+          onChange={(e) => {
+            setErrorFetching(false);
+            setLoading(false);
+            setSearchValue(e.target.value);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              searchProfiles(searchValue);
+            }
+          }}
+          variant="outlined"
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton aria-label="Search profiles" type="submit" onClick={() => searchProfiles(searchValue)}>
+                  <Search />
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+        />
+      </Box>
       {loading && <CircularProgress />}
       {errorFetching && <Alert severity="error">Unable to find profile for user: {searchValue}</Alert>}
       {profile && (
