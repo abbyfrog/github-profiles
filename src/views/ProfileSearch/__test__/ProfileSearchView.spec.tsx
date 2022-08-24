@@ -11,20 +11,34 @@ describe('ProfileSearchView', () => {
   let fetchSpy: jest.SpyInstance;
 
   beforeEach(() => {
-    fetchSpy = jest.spyOn(global, 'fetch').mockImplementation(
-      jest.fn(async () =>
-        Promise.resolve({
-          status: 200,
-          json: async () =>
-            Promise.resolve({
-              avatar_url: avatarUrl,
-              followers: followerCount,
-              login: username,
-              public_repos: repoCount,
-            }),
-        }),
-      ) as jest.Mock,
-    );
+    fetchSpy = jest
+      .spyOn(global, 'fetch')
+      .mockImplementationOnce(
+        jest.fn(async () =>
+          Promise.resolve({
+            status: 200,
+            json: async () =>
+              Promise.resolve({
+                avatar_url: avatarUrl,
+                followers: followerCount,
+                login: username,
+                public_repos: repoCount,
+              }),
+          }),
+        ) as jest.Mock,
+      )
+      .mockImplementationOnce(
+        jest.fn(async () =>
+          Promise.resolve({
+            status: 200,
+            json: async () =>
+              Promise.resolve([
+                { name: 'repo1', url: 'http://github.com/repo1', forkCount: 3, starCount: 5 },
+                { name: 'repo2', url: 'http://github.com/repo2', forkCount: 1, starCount: 4 },
+              ]),
+          }),
+        ) as jest.Mock,
+      );
   });
 
   afterEach(() => {
@@ -57,53 +71,45 @@ describe('ProfileSearchView', () => {
       expect(await screen.findByRole('progressbar')).toBeInTheDocument();
     });
 
-    it('requests the user profile when the search button is clicked', async () => {
+    it.each([
+      [
+        'search button is clicked',
+        () => {
+          fireEvent.change(usernameTextbox(), { target: { value: username } });
+          fireEvent.click(searchButton());
+        },
+      ],
+      [
+        'enter key is pressed',
+        () => {
+          fireEvent.change(usernameTextbox(), { target: { value: username } });
+          fireEvent.keyDown(searchButton(), { key: 'Enter', code: 'Enter', charCode: 13 });
+        },
+      ],
+    ])('requests the user profile and repository when the search button is clicked', async (_, setUp) => {
       render(<ProfileSearchView />);
 
-      fireEvent.change(usernameTextbox(), { target: { value: username } });
-      fireEvent.click(searchButton());
+      setUp();
 
       await waitForElementToBeRemoved(loadingSpinner());
 
-      expect(fetchSpy).toHaveBeenCalledTimes(1);
-      expect(fetchSpy).toHaveBeenCalledWith(`https://api.github.com/users/${username}`);
-    });
-
-    it('requests the user profile when the enter key is pressed', async () => {
-      render(<ProfileSearchView />);
-
-      fireEvent.change(usernameTextbox(), { target: { value: username } });
-      fireEvent.keyDown(searchButton(), { key: 'Enter', code: 'Enter', charCode: 13 });
-
-      await waitForElementToBeRemoved(loadingSpinner());
-
-      expect(fetchSpy).toHaveBeenCalledTimes(1);
-      expect(fetchSpy).toHaveBeenCalledWith(`https://api.github.com/users/${username}`);
+      expect(fetchSpy).toHaveBeenCalledTimes(2);
+      expect(fetchSpy).toHaveBeenNthCalledWith(1, `https://api.github.com/users/${username}`);
+      expect(fetchSpy).toHaveBeenNthCalledWith(2, `https://api.github.com/users/${username}/repos`);
     });
   });
 
-  describe('displaying the user profile', () => {
-    it('displays the username and number of repositories and followers', async () => {
-      render(<ProfileSearchView />);
-      fireEvent.change(usernameTextbox(), { target: { value: username } });
-      fireEvent.click(searchButton());
+  it('displays the user profile', async () => {
+    render(<ProfileSearchView />);
+    fireEvent.change(usernameTextbox(), { target: { value: username } });
+    fireEvent.click(searchButton());
 
-      await waitForElementToBeRemoved(loadingSpinner());
+    await waitForElementToBeRemoved(loadingSpinner());
 
-      expect(screen.getByText(`Username: ${username}`)).toBeInTheDocument();
-      expect(screen.getByText(`Number of repositories: ${repoCount}`)).toHaveTextContent('7');
-      expect(screen.getByText(`Number of followers: ${followerCount}`)).toHaveTextContent('4');
-    });
-
-    it('displays the user avatar', async () => {
-      render(<ProfileSearchView />);
-
-      fireEvent.change(usernameTextbox(), { target: { value: username } });
-      fireEvent.click(searchButton());
-
-      await waitForElementToBeRemoved(loadingSpinner());
-
-      expect(screen.getByAltText('Profile Avatar')).toHaveAttribute('src', avatarUrl);
-    });
+    expect(screen.getByText(`Username: ${username}`)).toBeInTheDocument();
+    expect(screen.getByText(`Number of repositories: ${repoCount}`)).toBeInTheDocument();
+    expect(screen.getByText(`Number of followers: ${followerCount}`)).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Profile Avatar' })).toHaveAttribute('src', avatarUrl);
+    expect(screen.getAllByLabelText(/Click here to visit/)).toHaveLength(2);
   });
 });

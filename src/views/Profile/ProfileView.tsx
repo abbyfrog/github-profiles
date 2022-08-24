@@ -13,9 +13,9 @@ const TopRepositories: React.FC<{ repositories: Repository[] }> = ({ repositorie
   return (
     <>
       {topRepositories.map((repo, index) => (
-        <Typography>
+        <Typography key={`${repo.name}-${repo.url}`}>
           {index + 1}:{' '}
-          <Link href={repo.url} key={`${repo.name}-${repo.url}`}>
+          <Link href={repo.url} aria-label={`Click here to visit the ${repo.name} repository`}>
             {repo.name}
           </Link>
         </Typography>
