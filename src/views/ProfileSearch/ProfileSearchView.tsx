@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, Card, CardHeader, CircularProgress, IconButton, InputAdornment, TextField } from '@mui/material';
+import { Alert, Box, CircularProgress, IconButton, InputAdornment, TextField, Typography } from '@mui/material';
 import { Search } from '@mui/icons-material';
 import { ProfileView } from '../Profile/ProfileView';
 import { Profile } from '../../types/profile';
@@ -53,8 +53,8 @@ export const ProfileSearchView: React.FC = () => {
   );
 
   return (
-    <Card>
-      <CardHeader title="GitHub profile finder" />
+    <Box>
+      <Typography variant="h3">GitHub profile finder</Typography>
       <TextField
         label="Username"
         value={searchValue}
@@ -90,6 +90,6 @@ export const ProfileSearchView: React.FC = () => {
           username={profile.username}
         />
       )}
-    </Card>
+    </Box>
   );
 };

@@ -34,7 +34,7 @@ describe('ProfileSearchView', () => {
   it('renders title', () => {
     render(<ProfileSearchView />);
 
-    const title = screen.getByText('GitHub profile finder');
+    const title = screen.getByRole('heading', { name: 'GitHub profile finder' });
 
     expect(title).toBeInTheDocument();
   });
