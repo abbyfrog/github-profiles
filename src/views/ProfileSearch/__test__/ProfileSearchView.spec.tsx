@@ -50,7 +50,7 @@ describe('ProfileSearchView', () => {
 
     const title = screen.getByRole('heading', { name: 'GitHub profile finder' });
 
-    expect(title).toBeInTheDocument();
+    expect(title).toBeVisible();
   });
 
   it('allows entering text in the Username field', () => {
@@ -61,42 +61,42 @@ describe('ProfileSearchView', () => {
     expect(usernameTextbox()).toHaveValue(username);
   });
 
-  describe('getting the user profile', () => {
-    it('displays a loading spinner while the request is being made', async () => {
-      render(<ProfileSearchView />);
+  it('displays a loading spinner while the request is being made', async () => {
+    render(<ProfileSearchView />);
 
-      fireEvent.change(usernameTextbox(), { target: { value: username } });
-      fireEvent.click(searchButton());
+    fireEvent.change(usernameTextbox(), { target: { value: username } });
+    fireEvent.click(searchButton());
 
-      expect(await screen.findByRole('progressbar')).toBeInTheDocument();
-    });
+    expect(loadingSpinner()).toBeVisible();
+    await waitForElementToBeRemoved(loadingSpinner());
+    expect(screen.queryByRole('progressbar')).toBeNull();
+  });
 
-    it.each([
-      [
-        'search button is clicked',
-        () => {
-          fireEvent.change(usernameTextbox(), { target: { value: username } });
-          fireEvent.click(searchButton());
-        },
-      ],
-      [
-        'enter key is pressed',
-        () => {
-          fireEvent.change(usernameTextbox(), { target: { value: username } });
-          fireEvent.keyDown(searchButton(), { key: 'Enter', code: 'Enter', charCode: 13 });
-        },
-      ],
-    ])('requests the user profile and repository when the search button is clicked', async (_, setUp) => {
-      render(<ProfileSearchView />);
+  it.each([
+    [
+      'search button is clicked',
+      () => {
+        fireEvent.change(usernameTextbox(), { target: { value: username } });
+        fireEvent.click(searchButton());
+      },
+    ],
+    [
+      'enter key is pressed',
+      () => {
+        fireEvent.change(usernameTextbox(), { target: { value: username } });
+        fireEvent.keyDown(searchButton(), { key: 'Enter', code: 'Enter', charCode: 13 });
+      },
+    ],
+  ])('requests the user profile and repository when the %s', async (_, setUp) => {
+    render(<ProfileSearchView />);
 
-      setUp();
+    setUp();
 
-      await waitForElementToBeRemoved(loadingSpinner());
+    await waitForElementToBeRemoved(loadingSpinner());
 
-      expect(fetchSpy).toHaveBeenCalledTimes(2);
-      expect(fetchSpy).toHaveBeenNthCalledWith(1, `https://api.github.com/users/${username}`);
-      expect(fetchSpy).toHaveBeenNthCalledWith(2, `https://api.github.com/users/${username}/repos`);
-    });
+    expect(fetchSpy).toHaveBeenCalledTimes(2);
+    expect(fetchSpy).toHaveBeenNthCalledWith(1, `https://api.github.com/users/${username}`);
+    expect(fetchSpy).toHaveBeenNthCalledWith(2, `https://api.github.com/users/${username}/repos`);
   });
 
   it('displays the user profile', async () => {
@@ -106,9 +106,9 @@ describe('ProfileSearchView', () => {
 
     await waitForElementToBeRemoved(loadingSpinner());
 
-    expect(screen.getByText(`Username: ${username}`)).toBeInTheDocument();
-    expect(screen.getByText(`Number of repositories: ${repoCount}`)).toBeInTheDocument();
-    expect(screen.getByText(`Number of followers: ${followerCount}`)).toBeInTheDocument();
+    expect(screen.getByText(`Username: ${username}`)).toBeVisible();
+    expect(screen.getByText(`Number of repositories: ${repoCount}`)).toBeVisible();
+    expect(screen.getByText(`Number of followers: ${followerCount}`)).toBeVisible();
     expect(screen.getByRole('img', { name: 'Profile Avatar' })).toHaveAttribute('src', avatarUrl);
     expect(screen.getAllByLabelText(/Click here to visit/)).toHaveLength(2);
   });

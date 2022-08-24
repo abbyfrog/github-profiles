@@ -37,9 +37,10 @@ export const ProfileView: React.FC<Profile> = ({
         <Typography>Username: {username}</Typography>
         <Typography>Number of repositories: {repositoryCount}</Typography>
         <Typography>Number of followers: {followerCount}</Typography>
-        <Typography style={styles.listPadding}>
-          Top 4 repositories: <TopRepositories repositories={repositories} />
-        </Typography>
+        <Box style={styles.listPadding}>
+          <Typography>Top 4 repositories: </Typography>
+          <TopRepositories repositories={repositories} />
+        </Box>
       </Box>
       <Avatar alt="Profile Avatar" src={avatarUrl} sx={styles.avatar} />
     </Box>
