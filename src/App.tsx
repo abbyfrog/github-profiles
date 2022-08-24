@@ -1,42 +1,58 @@
 import React from 'react';
-import IconButton from '@mui/material/IconButton';
 import Box from '@mui/material/Box';
 import { createTheme, ThemeProvider, useTheme } from '@mui/material/styles';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
-import { CssBaseline } from '@mui/material';
+import { Button, CssBaseline } from '@mui/material';
 import { ProfileSearchView } from './views/ProfileSearch/ProfileSearchView';
+import { getItemFromLocalStorage, updateLocalStorage } from './utils/localStorage';
 
-const ColourModeContext = React.createContext({ toggleColorMode: () => {} });
+type ColourMode = 'light' | 'dark';
 
-function MyApp() {
+const COLOUR_MODE_KEY = 'colourMode';
+const ColourModeContext = React.createContext({ toggleColourMode: () => {} });
+
+function Views() {
   const theme = useTheme();
   const colourMode = React.useContext(ColourModeContext);
   return (
     <Box>
-      Switch to {theme.palette.mode === 'dark' ? 'light' : 'dark'} mode
-      <IconButton sx={{ ml: 1 }} onClick={colourMode.toggleColorMode} color="inherit">
-        {theme.palette.mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
-      </IconButton>
+      <Button
+        variant="contained"
+        startIcon={theme.palette.mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
+        onClick={colourMode.toggleColourMode}
+      >
+        {theme.palette.mode === 'dark' ? 'Light' : 'Dark'} mode
+      </Button>
       <ProfileSearchView />
     </Box>
   );
 }
 
 export const App = () => {
-  const [isInDarkMode, toggleDarkMode] = React.useState<boolean>(false);
-  const colourMode = React.useMemo(() => ({ toggleColorMode: () => toggleDarkMode(!isInDarkMode) }), [isInDarkMode]);
-
-  const theme = React.useMemo(
-    () => createTheme({ palette: { mode: isInDarkMode ? 'dark' : 'light' } }),
-    [isInDarkMode],
+  const [colourMode, setColourMode] = React.useState<ColourMode>(
+    (getItemFromLocalStorage(COLOUR_MODE_KEY) as ColourMode) ?? 'light',
+  );
+  const memoisedColourMode = React.useMemo(
+    () => ({
+      toggleColourMode: () => {
+        setColourMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
+      },
+    }),
+    [],
   );
 
+  const theme = React.useMemo(() => createTheme({ palette: { mode: colourMode } }), [colourMode]);
+
+  React.useEffect(() => {
+    updateLocalStorage({ key: COLOUR_MODE_KEY, value: colourMode });
+  }, [colourMode]);
+
   return (
-    <ColourModeContext.Provider value={colourMode}>
+    <ColourModeContext.Provider value={memoisedColourMode}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <MyApp />
+        <Views />
       </ThemeProvider>
     </ColourModeContext.Provider>
   );
