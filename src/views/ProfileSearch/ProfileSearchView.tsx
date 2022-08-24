@@ -10,21 +10,21 @@ import {
   TextField,
 } from '@mui/material';
 import { Search } from '@mui/icons-material';
+import { UserDTO } from '../../types/profile';
 
 export const ProfileSearchView: React.FC = () => {
   const [searchValue, setSearchValue] = React.useState<string>('');
-
   const [loading, setLoading] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string | undefined>(undefined);
 
-  const searchProfiles = React.useCallback((profileToSearchFor: string) => {
+  const searchProfiles = React.useCallback((username: string) => {
     setLoading(true);
     setError(undefined);
 
-    fetch(`https://api.github.com/users/${profileToSearchFor}`)
+    fetch(`https://api.github.com/users/${username}`)
       .then(async (data) => {
-        const jsonUser: unknown = await data.json();
-        console.log('User: ', jsonUser);
+        const user = (await data.json()) as UserDTO;
+        console.log('user: ', user);
       })
       .catch((err: unknown) => {
         const errorMessage = `Error fetching user: ${JSON.stringify(err, null, 2)}`;
