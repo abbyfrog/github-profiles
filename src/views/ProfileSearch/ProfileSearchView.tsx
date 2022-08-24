@@ -1,14 +1,5 @@
 import React from 'react';
-import {
-  Alert,
-  AlertTitle,
-  Card,
-  CardHeader,
-  CircularProgress,
-  IconButton,
-  InputAdornment,
-  TextField,
-} from '@mui/material';
+import { Alert, Card, CardHeader, CircularProgress, IconButton, InputAdornment, TextField } from '@mui/material';
 import { Search } from '@mui/icons-material';
 import { ProfileView } from '../Profile/ProfileView';
 import { Profile, UserDTO } from '../../types/profile';
@@ -16,38 +7,39 @@ import { Profile, UserDTO } from '../../types/profile';
 export const ProfileSearchView: React.FC = () => {
   const [searchValue, setSearchValue] = React.useState<string>('');
   const [loading, setLoading] = React.useState<boolean>(false);
-  const [error, setError] = React.useState<string | undefined>(undefined);
+  const [errorFetching, setErrorFetching] = React.useState<boolean>(false);
   const [profile, setProfile] = React.useState<Profile | undefined>(undefined);
 
-  const searchProfiles = React.useCallback((username: string) => {
-    setLoading(true);
-    setError(undefined);
-
-    fetch(`https://api.github.com/users/${username}`)
-      .then(async (response) => {
-        if (response.status === 200) {
-          const user = (await response.json()) as UserDTO;
-          console.log('user: ', user);
-          setProfile({
-            username: user.login,
-            avatarUrl: user.avatar_url,
-            repositoryCount: user.public_repos,
-            followerCount: user.followers,
-          });
-        } else {
-          console.log('nope nope nope');
-        }
-      })
-      .catch((err: unknown) => {
-        setProfile(undefined);
-        const errorMessage = `Error fetching user: ${JSON.stringify(err, null, 2)}`;
-        console.error(errorMessage);
-        setError(errorMessage);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+  const handleFetchError = React.useCallback((error: unknown) => {
+    console.error('Failed to fetch user: ', error);
+    setProfile(undefined);
+    setErrorFetching(true);
   }, []);
+
+  const searchProfiles = React.useCallback(
+    (username: string) => {
+      setLoading(true);
+      setErrorFetching(false);
+
+      fetch(`https://api.github.com/users/${username}`)
+        .then(async (response) => {
+          if (response.status === 200) {
+            const user = (await response.json()) as UserDTO;
+            setProfile({
+              username: user.login,
+              avatarUrl: user.avatar_url,
+              repositoryCount: user.public_repos,
+              followerCount: user.followers,
+            });
+          } else {
+            handleFetchError(response);
+          }
+        })
+        .catch((err: unknown) => handleFetchError(err))
+        .finally(() => setLoading(false));
+    },
+    [handleFetchError],
+  );
 
   return (
     <Card>
@@ -55,7 +47,11 @@ export const ProfileSearchView: React.FC = () => {
       <TextField
         label="Username"
         value={searchValue}
-        onChange={(e) => setSearchValue(e.target.value)}
+        onChange={(e) => {
+          setErrorFetching(false);
+          setLoading(false);
+          setSearchValue(e.target.value);
+        }}
         onKeyDown={(e) => {
           if (e.key === 'Enter') {
             searchProfiles(searchValue);
@@ -73,12 +69,7 @@ export const ProfileSearchView: React.FC = () => {
         }}
       />
       {loading && <CircularProgress />}
-      {error && (
-        <Alert severity="error">
-          <AlertTitle>Error</AlertTitle>
-          {error}
-        </Alert>
-      )}
+      {errorFetching && <Alert severity="error">Unable to find profile for user: {searchValue}</Alert>}
       {profile && (
         <ProfileView
           avatarUrl={profile.avatarUrl}
