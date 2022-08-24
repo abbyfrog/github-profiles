@@ -1,6 +1,7 @@
-import React from "react";
-import { render } from "react-dom";
-import { ProfileSearch } from "./views/ProfileSearch/ProfileSearch";
+import React from 'react';
+import * as ReactDOM from 'react-dom/client';
+import { ProfileSearch } from './views/ProfileSearch/ProfileSearch';
 
-const App = <ProfileSearch />;
-render(App, document.getElementById("root"));
+const container = document.getElementById('root') as Element;
+const root = ReactDOM.createRoot(container);
+root.render(<ProfileSearch />);
